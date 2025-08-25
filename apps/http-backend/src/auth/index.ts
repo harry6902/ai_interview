@@ -4,6 +4,9 @@ import express,{Router} from 'express';
 import { signUpBody,signInBody } from '@repo/types/types';
 import bcrypt from 'bcryptjs'
 import  jwt  from 'jsonwebtoken';
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 
 import {prismaClient}  from "@repo/db/client"
 
@@ -30,11 +33,11 @@ r.post("/signup", async(req ,res)=>{
                                     }
                                    })
     if( checkExistingUserWithUsername){
-                                    return res
-                                           .status(400)
-                                           .json({
-                                            "error":"username already exists"
-                                           })
+            return res
+                   .status(400)
+                   .json({
+                    "error":"username already exists"
+                   })
                                 }
                             
     const checkExistingUserWithEmail= await prismaClient
@@ -121,13 +124,13 @@ r.post("/signin",async(req ,res)=>{
                })
     }
     const accessToken= jwt.sign({
-        username:req.body.username,
-        email:req.body.email
-    },'secret', {expiresIn:3*60})
+        username:checkUser.username,
+        email:checkUser.email
+    },process.env.JWT_SECRET!, {expiresIn:3*60})
     const refreshToken= jwt.sign({
         username:req.body.username,
        
-    },'secret', {expiresIn:60*60})
+    },process.env.JWT_SECRET!, {expiresIn:60*60})
 
 
     res
