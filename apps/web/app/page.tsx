@@ -1,102 +1,96 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
-
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
-
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
-
-  return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
+'use client'
+import { useState } from "react";
+import axios from "axios";
+import {useRouter} from "next/navigation";
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>apps/web/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [userName, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [showUsernameError, setShowUsernameError] = useState(false);
+  const [showPasswordError, setShowPasswordError] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const router=useRouter();
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turborepo.com/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+
+  const handleLogin =async()=>{
+    setShowPasswordError(false);
+    setShowUsernameError(false);
+
+    try {
+      const response= await axios.post("http://localhost:8080/api/v1/auth/signin",{
+        username: userName,
+        password
+      })
+
+      if(response.status===200){
+
+        router.push("/dashboard")
+        return
+
+      }
+      
+    } catch (error:any) {
+
+      if(error.response.data.error==="User doesnot exist with username or email"){
+        setShowUsernameError(true);
+        setUsernameError("User doesnot exist with username or email");
+        return;
+      }
+      if(error.response.data.error==="Incorrect password"){
+        setShowPasswordError(true);
+        setPasswordError("Incorrect password");
+      }
+
+      
+    }
+
+  }
+
+  return (
+    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black h-screen w-screen flex justify-center items-center">
+      <div className="bg-white/10 backdrop-blur-md shadow-2xl border border-white/20 rounded-2xl p-10 w-[90%] max-w-md flex flex-col gap-6">
+        
+        <h1 className="text-3xl font-bold text-white text-center">Welcome Back 👋</h1>
+        <p className="text-gray-300 text-center">Login to continue</p>
+        <div>
+        <input
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+          type="text"
+          placeholder="Username"
+          className="h-12 w-full rounded-xl px-4 bg-gray-900/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+        />
+        {
+          showUsernameError && 
+          <p className="pl-2 text-red-500">{usernameError}</p>
+        }
         </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
-        </Button>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.com?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.com →
-        </a>
-      </footer>
+        <div>
+        <input
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          type="password"
+          placeholder="Password"
+          className="h-12 w-full rounded-xl px-4 bg-gray-900/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+        />
+        {
+          showPasswordError &&
+          <p className="ml-2 text-red-500">{passwordError}</p>
+        }
+        </div>
+
+        <button onClick={handleLogin} className="  hover:cursor-pointer h-12 w-full rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-300">
+          Login
+        </button>
+
+        <p className="text-gray-400 text-center text-sm">
+          Don’t have an account?{" "}
+          <a href="/signup" className="text-blue-400 hover:underline">
+            Sign Up
+          </a>
+        </p>
+      </div>
     </div>
   );
 }
