@@ -126,7 +126,7 @@ r.post("/signin",async(req ,res)=>{
     const accessToken= jwt.sign({
         username:checkUser.username,
         email:checkUser.email
-    },process.env.JWT_SECRET!, {expiresIn:3*60})
+    },process.env.JWT_SECRET!, {expiresIn:60*60})
     const refreshToken= jwt.sign({
         username:req.body.username,
        
